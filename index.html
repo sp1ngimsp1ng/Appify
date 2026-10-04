@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iOS PWA & Profile Builder with Icon Support</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: #1e293b; padding: 2rem; border-radius: 1rem; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        h2 { margin-top: 0; color: #38bdf8; text-align: center; }
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; }
+        input[type="text"], input[type="url"] { width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #475569; background: #0f172a; color: #fff; box-sizing: border-box; }
+        input[type="file"] { width: 100%; color: #94a3b8; }
+        button { width: 100%; padding: 0.75rem; background: #0284c7; color: white; border: none; border-radius: 0.5rem; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #0369a1; }
+        .note { font-size: 0.75rem; color: #94a3b8; text-align: center; margin-top: 1rem; }
+        #iconPreview { display: block; margin-top: 0.5rem; width: 48px; height: 48px; border-radius: 8px; object-fit: cover; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>iOS PWA Profile Generator</h2>
+    
+    <div class="form-group">
+        <label>App Name</label>
+        <input type="text" id="appName" placeholder="My Awesome PWA" value="Sp1ng App">
+    </div>
+
+    <div class="form-group">
+        <label>Web App URL</label>
+        <input type="url" id="appUrl" placeholder="https://example.com" value="https://google.com">
+    </div>
+
+    <div class="form-group">
+        <label>App Icon (PNG/JPEG)</label>
+        <input type="file" id="appIcon" accept="image/*" onchange="previewImage(event)">
+        <img id="iconPreview" alt="Icon Preview">
+    </div>
+
+    <button onclick="generateProfile()">Download iOS .mobileconfig</button>
+    <div class="note">Embeds your custom icon and creates a full-screen home screen web clip.</div>
+</div>
+
+<script>
+let base64Icon = "";
+
+function previewImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Get raw base64 data without the data URL prefix
+            base64Icon = e.target.result.split(',')[1];
+            
+            // Show preview
+            const preview = document.getElementById('iconPreview');
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    }
+}
+
+function generateProfile() {
+    const name = document.getElementById('appName').value || 'My App';
+    const url = document.getElementById('appUrl').value || 'https://example.com';
+    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+
+    // Optional icon XML block
+    let iconXml = "";
+    if (base64Icon) {
+        iconXml = `\n\t\t\t<key>Icon</key>\n\t\t\t<data>${base64Icon}</data>`;
+    }
+
+    // XML Property List for iOS Web Clip configuration payload
+    const plistContent = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>FullScreen</key>
+            <true/>
+            <key>IgnoreManifestScope</key>
+            <true/>
+            <key>Label</key>
+            <string>${name}</string>${iconXml}
+            <key>PayloadDescription</key>
+            <string>Installs Web Clip for ${name}</string>
+            <key>PayloadDisplayName</key>
+            <string>${name}</string>
+            <key>PayloadIdentifier</key>
+            <string>com.pwa.webclip.${uuid}</string>
+            <key>PayloadType</key>
+            <string>com.apple.webClip.managed</string>
+            <key>PayloadUUID</key>
+            <string>${uuid}</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>Precomposed</key>
+            <true/>
+            <key>URL</key>
+            <string>${url}</string>
+        </dict>
+    </array>
+    <key>PayloadDescription</key>
+    <string>PWA Installer Profile</string>
+    <key>PayloadDisplayName</key>
+    <string>${name} Installer</string>
+    <key>PayloadIdentifier</key>
+    <string>com.pwa.config.${uuid}</string>
+    <key>PayloadOrganization</key>
+    <string>PWA Builder</string>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>11111111-2222-3333-4444-${uuid.slice(12)}</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+</dict>
+</plist>`;
+
+    // Trigger browser download for the .mobileconfig file
+    const blob = new Blob([plistContent], { type: 'application/x-apple-aspen-config' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${name.toLowerCase().replace(/\s+/g, '-')}.mobileconfig`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+
+</body>
+</html>
