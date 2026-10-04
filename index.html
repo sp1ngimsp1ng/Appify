@@ -3,25 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iOS PWA & Profile Builder with Icon Support</title>
+    <title>Appify - iOS PWA Builder</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: #1e293b; padding: 2rem; border-radius: 1rem; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        h2 { margin-top: 0; color: #38bdf8; text-align: center; }
-        .form-group { margin-bottom: 1.25rem; }
-        label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; }
-        input[type="text"], input[type="url"] { width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #475569; background: #0f172a; color: #fff; box-sizing: border-box; }
-        input[type="file"] { width: 100%; color: #94a3b8; }
-        button { width: 100%; padding: 0.75rem; background: #0284c7; color: white; border: none; border-radius: 0.5rem; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-        button:hover { background: #0369a1; }
-        .note { font-size: 0.75rem; color: #94a3b8; text-align: center; margin-top: 1rem; }
-        #iconPreview { display: block; margin-top: 0.5rem; width: 48px; height: 48px; border-radius: 8px; object-fit: cover; display: none; }
+        :root {
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
+            --accent: #ec4899;
+            --bg-gradient: linear-gradient(135deg, #f5f3ff 0%, #fdf2f8 50%, #faf5ff 100%);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-attachment: fixed;
+        }
+
+        .container {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.35rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        input[type="text"], input[type="url"] {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border-radius: 0.75rem;
+            border: 1.5px solid var(--border-color);
+            background: #ffffff;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        input[type="text"]:focus, input[type="url"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        }
+
+        .file-dropzone {
+            border: 2px dashed #d1d5db;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            text-align: center;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .file-dropzone:hover {
+            border-color: var(--primary);
+            background: #f5f3ff;
+        }
+
+        input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-label-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .preview-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        #iconPreview {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            object-fit: cover;
+            display: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.9rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+            margin-top: 0.5rem;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+            filter: brightness(1.05);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .note {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 1.25rem;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Appify</h2>
+    <div class="header">
+        <h2>Appify</h2>
+        <div class="subtitle">iOS PWA & Profile Generator</div>
+    </div>
     
     <div class="form-group">
         <label>App Name</label>
@@ -35,12 +194,18 @@
 
     <div class="form-group">
         <label>App Icon (PNG/JPEG)</label>
-        <input type="file" id="appIcon" accept="image/*" onchange="previewImage(event)">
-        <img id="iconPreview" alt="Icon Preview">
+        <div class="file-dropzone">
+            <span class="file-label-text" id="fileText">Choose image or drag & drop</span>
+            <input type="file" id="appIcon" accept="image/*" onchange="previewImage(event)">
+        </div>
+        <div class="preview-wrapper">
+            <img id="iconPreview" alt="Icon Preview">
+            <span id="fileName" style="font-size: 0.8rem; color: var(--text-muted); display: none;"></span>
+        </div>
     </div>
 
     <button onclick="generateProfile()">Download iOS .mobileconfig</button>
-    <div class="note">Embeds your custom icon and creates a full-screen home screen web clip.</div>
+    <div class="note">Embeds your custom icon and creates a clean, full-screen home screen web clip configuration.</div>
 </div>
 
 <script>
@@ -51,13 +216,18 @@ function previewImage(event) {
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            // Get raw base64 data without the data URL prefix
             base64Icon = e.target.result.split(',')[1];
             
-            // Show preview
             const preview = document.getElementById('iconPreview');
             preview.src = e.target.result;
             preview.style.display = 'block';
+
+            const fileText = document.getElementById('fileText');
+            fileText.textContent = "Change icon";
+
+            const fileName = document.getElementById('fileName');
+            fileName.textContent = file.name;
+            fileName.style.display = 'block';
         }
         reader.readAsDataURL(file);
     }
@@ -71,13 +241,11 @@ function generateProfile() {
         return v.toString(16);
     });
 
-    // Optional icon XML block
     let iconXml = "";
     if (base64Icon) {
         iconXml = `\n\t\t\t<key>Icon</key>\n\t\t\t<data>${base64Icon}</data>`;
     }
 
-    // XML Property List for iOS Web Clip configuration payload
     const plistContent = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -126,7 +294,6 @@ function generateProfile() {
 </dict>
 </plist>`;
 
-    // Trigger browser download for the .mobileconfig file
     const blob = new Blob([plistContent], { type: 'application/x-apple-aspen-config' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
