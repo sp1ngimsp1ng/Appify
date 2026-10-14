@@ -20,7 +20,6 @@
 
 * ⚡ **Instant Conversion:** Enter your website URL and get your PWA structure in a heartbeat.
 * 🛠️ **Profile.mobileconfig Generator:** Customize your app name and icon.
-* 🛡️ **Ready-to-use Service Worker:** Smart caching management to ensure an offline-first experience.
 * 🎨 **Modern & Intuitive UI:** A clean, responsive, and user-friendly interface.
 * 📱 **Ready for Sideloading & Stores:** Perfect for distributing your web projects as lightweight applications.
 
